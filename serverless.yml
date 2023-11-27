@@ -1,0 +1,65 @@
+service: notes-API
+frameworkVersion: '3'
+useDotenv: true
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  profile: ${env:AWS_PROFILE}
+  region: eu-north-1
+  iam:
+    role: ${env:AWS_IAM_ROLE}
+
+
+plugins:
+  - serverless-webpack
+
+package:
+  individually: true
+
+functions:
+  postNotes:
+    handler: functions/postNotes/index.handler
+    events:
+      - http:
+          path: /notes
+          method: post
+
+
+  getNotes:
+    handler: functions/getNotes/index.handler 
+    events:
+      - http:
+          path: /notes
+          method: get
+
+
+  deleteNotes:
+    handler: functions/deleteNotes/index.handler 
+    events:
+      - http:
+          path: /notes/{id}
+          method: delete
+
+
+  editNotes:
+    handler: functions/editNotes/index.handler 
+    events:
+      - http:
+          path: /notes/{id}
+          method: put
+
+
+resources:
+  Resources:
+    notesDb:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: notes-db
+        AttributeDefinitions: 
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
